@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>MongoDB AJAX Search</title>
+</head>
+<body>
+    <h1>Live Movie Search</h1>
+    <input type="text" name="movie" id="search-box" onkeyup="sendData(this)" placeholder="Search for a movie..." autofocus/>
+    <p class="count"></p>
+    <section id="searchResults">
+
+    </section>
+</body>
+<script>
+    function sendData  (e) {
+        const searchResults = document.getElementById('searchResults'),
+        match = e.value.match(/^[a-zA-Z ]*/),
+        match2 = e.value.match(/\s*/);
+
+        if(match2[0]===e.value){
+            searchResults.innerHTML = ''
+            document.querySelector('.count').innerHTML = ''
+            return;
+        }
+
+        if(match[0]===e.value){
+            fetch('/getMovies ',{
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({payload: e.value})
+            }).then(res => res.json()).then(data=>{
+                let {payload} = data
+                searchResults.innerHTML = '';
+                if(payload < 1){
+                    let count = 0
+                     document.querySelector('.count').innerHTML = `${count} movies were found!`
+                    return;
+                }
+                payload.forEach((item, index)=>{
+                    count = payload.length
+                    if(count === 1)document.querySelector('.count').innerHTML = `${count} movies was found!`
+                    if(index > 0) searchResults.innerHTML += `<hr>`;
+                    searchResults.innerHTML += `<p>Title: ${item.movie_title.charAt(0).toUpperCase() + item.movie_title.slice(1)  } <br> Genre: ${item.movie_genre}</p>`;
+                    document.querySelector('.count').innerHTML = `${count} movies were found!`
+                });
+            });
+            return;
+        }
+        searchResults.innerHTML = ''
+    }
+</script>
+</html>
